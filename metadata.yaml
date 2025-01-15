@@ -1,4 +1,4 @@
-package_name: "cellpose"
+project_slug: "cellpose"
 project_url: "https://github.com/MouseLand/cellpose"
 serverkit_repo_url: "https://github.com/Imaging-Server-Kit/serverkit-cellpose"
 serverkit_author: "EPFL Center for Imaging"
