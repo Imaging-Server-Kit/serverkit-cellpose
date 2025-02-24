@@ -3,8 +3,6 @@
 
 Implementation of a web server for [CellPose](https://github.com/MouseLand/cellpose).
 
-Author: EPFL Center for Imaging
-
 ## Installing the algorithm server with `pip`
 
 Install dependencies:
@@ -27,12 +25,12 @@ A documentation of the endpoints is automatically generated at http://localhost:
 
 **GET endpoints**
 
-- http://localhost:8000/: Listing of running algorithm servers.
+- http://localhost:8000/ : Running algorithm message.
 - http://localhost:8000/version: Version of the `imaging-server-kit` package.
 - http://localhost:8000/cellpose/info: Web page displaying project metadata.
 - http://localhost:8000/cellpose/demo: Plotly Dash web demo app.
 - http://localhost:8000/cellpose/parameters: Json Schema representation of algorithm parameters.
-- http://localhost:8000/cellpose/sample_images: Bytes string representation of the sample images.
+- http://localhost:8000/cellpose/sample_images: Byte string representation of the sample images.
 
 **POST endpoints**
 

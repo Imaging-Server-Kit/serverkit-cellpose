@@ -103,7 +103,7 @@ class Server(serverkit.Server):
         segmentation_params = {"name": "Cellpose result"}
         
         return [
-            (segmentation, segmentation_params, "labels"),
+            (segmentation, segmentation_params, "instance_mask"),
         ]
 
     def load_sample_images(self) -> List["np.ndarray"]:
