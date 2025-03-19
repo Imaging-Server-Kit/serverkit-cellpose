@@ -1,0 +1,7 @@
+FROM pytorch/pytorch:2.6.0-cuda12.6-cudnn9-runtime
+
+RUN python3 -m pip install --upgrade pip
+RUN pip install imaging-server-kit cellpose opencv-python-headless
+COPY . .
+EXPOSE 8000
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

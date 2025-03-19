@@ -6,6 +6,18 @@ import uvicorn
 import skimage.io
 import imaging_server_kit as serverkit
 from cellpose import models
+import os
+
+custom_model_path = "/models"
+custom_models = [f.name for f in os.scandir(custom_model_path)]
+base_models = ["cyto", "nuclei", "cyto2"]
+models_list = base_models
+if len(custom_models) > 0:
+    print(f"Found custom models: {custom_models}")
+    models_list += custom_models
+print(f"Available models: {models_list}")
+models_list = Literal[tuple(models_list)]
+
 
 class Parameters(BaseModel):
     """Defines the algorithm parameters"""
@@ -15,7 +27,7 @@ class Parameters(BaseModel):
         description="Input image (2D).",
         json_schema_extra={"widget_type": "image"},
     )
-    model_name: Literal["cyto", "nuclei", "cyto2"] = Field(
+    model_name: models_list = Field(
         default="cyto",
         title="Model",
         description="The model used for instance segmentation",
@@ -71,6 +83,12 @@ class Server(serverkit.Server):
     ):
         super().__init__(algorithm_name, parameters_model)
 
+        self.last_model_name = None
+        self.last_model = None
+        self.last_diameter = None
+        self.last_flow_threshold = None
+        self.last_cellprob_threshold = None
+
     def run_algorithm(
         self,
         image: np.ndarray,
@@ -81,16 +99,30 @@ class Server(serverkit.Server):
         **kwargs,
     ) -> List[tuple]:
         """Runs the algorithm."""
-        model = models.Cellpose(
-            gpu=False,  # For now
-            model_type=model_name,
-        )
-
         if diameter == 0:
             diameter = None
             print(
                 "Diameter is set to None. The size of the cells will be estimated on a per image basis"
             )
+
+        if model_name != self.last_model_name or diameter != self.last_diameter or flow_threshold != self.last_flow_threshold or cellprob_threshold != self.last_cellprob_threshold:
+            if model_name in custom_models:
+                model_path = os.path.join(custom_model_path, model_name)
+                print(f"Loading custom model from {model_path}")
+                model = models.CellposeModel(gpu = True, model_type= model_path)
+            else: 
+                model = models.Cellpose(
+                    gpu=True,
+                    model_type=model_name,
+                )
+            self.last_model_name = model_name
+            self.last_model = model
+            self.last_diameter = diameter
+            self.last_flow_threshold = flow_threshold
+            self.last_cellprob_threshold = cellprob_threshold
+        else:
+            print("Using cached model")
+            model = self.last_model
 
         segmentation, flows, styles, diams = model.eval(
             image,
