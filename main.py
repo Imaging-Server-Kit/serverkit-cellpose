@@ -10,7 +10,7 @@ import os
 
 custom_model_path = "/models"
 custom_models = [f.name for f in os.scandir(custom_model_path)]
-base_models = ["cyto", "nuclei", "cyto2"]
+base_models = ["cyto", "nuclei", "cyto2", "cyto3"]
 models_list = base_models
 if len(custom_models) > 0:
     print(f"Found custom models: {custom_models}")
@@ -38,7 +38,7 @@ class Parameters(BaseModel):
         title="Cell diameter (px)",
         description="The approximate size of the objects to detect",
         ge=0,
-        le=100,
+        le=500,
         json_schema_extra={
             "widget_type": "int",
             "step": 1,
@@ -59,8 +59,8 @@ class Parameters(BaseModel):
         default=0.5,
         title="Probability threshold",
         description="The detection probability threshold",
-        ge=0.0,
-        le=1.0,
+        ge=-6.0,
+        le=6.0,
         json_schema_extra={
             "widget_type": "float",
             "step": 0.01,
@@ -111,6 +111,7 @@ class Server(serverkit.Server):
                 print(f"Loading custom model from {model_path}")
                 model = models.CellposeModel(gpu = True, model_type= model_path)
             else: 
+                print("load_model")
                 model = models.Cellpose(
                     gpu=True,
                     model_type=model_name,
@@ -124,6 +125,7 @@ class Server(serverkit.Server):
             print("Using cached model")
             model = self.last_model
 
+        print("going to segment")
         segmentation, flows, styles, diams = model.eval(
             image,
             diameter=diameter,
@@ -135,7 +137,7 @@ class Server(serverkit.Server):
         segmentation_params = {"name": "Cellpose result"}
         
         return [
-            (segmentation, segmentation_params, "instance_mask"),
+            (segmentation, segmentation_params, "labels3d"),
         ]
 
     def load_sample_images(self) -> List["np.ndarray"]:
