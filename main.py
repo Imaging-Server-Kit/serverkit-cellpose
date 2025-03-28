@@ -7,8 +7,10 @@ import skimage.io
 import imaging_server_kit as serverkit
 from cellpose import models
 
+
 class Parameters(BaseModel):
     """Defines the algorithm parameters"""
+
     image: str = Field(
         ...,
         title="Image",
@@ -62,12 +64,12 @@ class Parameters(BaseModel):
             raise ValueError("Array has the wrong dimensionality.")
         return image_array
 
-# Define the run_algorithm() method for your algorithm
-class Server(serverkit.Server):
+
+class CellPoseServer(serverkit.AlgorithmServer):
     def __init__(
         self,
-        algorithm_name: str="cellpose",
-        parameters_model: Type[BaseModel]=Parameters
+        algorithm_name: str = "cellpose",
+        parameters_model: Type[BaseModel] = Parameters,
     ):
         super().__init__(algorithm_name, parameters_model)
 
@@ -101,7 +103,7 @@ class Server(serverkit.Server):
         )
 
         segmentation_params = {"name": "Cellpose result"}
-        
+
         return [
             (segmentation, segmentation_params, "instance_mask"),
         ]
@@ -112,8 +114,9 @@ class Server(serverkit.Server):
         images = [skimage.io.imread(image_path) for image_path in image_dir.glob("*")]
         return images
 
-server = Server()
+
+server = CellPoseServer()
 app = server.app
 
-if __name__=='__main__':
+if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000)
